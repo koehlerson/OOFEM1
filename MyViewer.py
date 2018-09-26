@@ -14,6 +14,7 @@ class MyViewer:
         self.__forceScale = 1
 
     def draw_elements(self):
+        """draw elements as a 3d cylinder"""
         cs = CylinderSet()
         cs.color = 'black'
         for i in self.Structure.Elements:
@@ -22,20 +23,22 @@ class MyViewer:
             cs.add_cylinder(i.get_node1().get_position(), i.get_node2().get_position(), r)
         self.__Viewer.add_object(cs)
 
-    def draw_constraints(self):
+    def draw_constraints(self, symbolscale = 1):
+        """draw the constraints in an engineering manner"""
+        self.__symbolScale = symbolscale
         for i in self.Structure.Nodes:
             constraint = i.get_constraint()
             for j in range(3):
                 if constraint.is_free(j) != True:
                     cone = Cone()
                     if j == 0:
-                        cone.direction = self.__symbolScale * [1, 0, 0]
+                        cone.direction = self.__symbolScale * array([1, 0, 0])
                         cone.center = i.get_position() - array([cone.height, 0, 0])
                     elif j == 1:
-                        cone.direction = self.__symbolScale * [0, 1, 0]
+                        cone.direction = self.__symbolScale * array([0, 1, 0])
                         cone.center = i.get_position() - array([0, cone.height, 0])
                     elif j == 2:
-                        cone.direction = self.__symbolScale * [0, 0, 1]
+                        cone.direction = self.__symbolScale * array([0, 0, 1])
                         cone.center = i.get_position() - array([0, 0, cone.height])
                     cone.height = self.__symbolScale*1
                     cone.radius = self.__symbolScale*0.5
@@ -44,6 +47,7 @@ class MyViewer:
                     self.__Viewer.add_object(cone)
 
     def draw_element_forces(self):
+        """draw the element forces as rectangulars attached to the elements. compression red, tension blue"""
         ps = PolygonSet()
         for i in self.Structure.Elements:
             force = i.compute_force()
@@ -74,6 +78,7 @@ class MyViewer:
         ps.create_colors()
 
     def draw_nodal_forces(self):
+        """draws all nodal forces as arrows. compression/tension forces red/blue"""
         cs = CylinderSet()
         for i in self.Structure.Nodes:
             force = i.get_force()
@@ -98,6 +103,7 @@ class MyViewer:
         self.__Viewer.add_object(cs)
 
     def draw_displacements(self):
+        """draws the current configuration in 'antiquewhite' """
         cs = CylinderSet()
         cs.color = 'antiquewhite'
         for i in self.Structure.Elements:
@@ -111,18 +117,21 @@ class MyViewer:
         self.__Viewer.add_object(cs)
 
     def set_visible(self):
+        """let the viewer run"""
         self.__Viewer.run()
 
     def set_displacement_scale(self, scale = 0):
+        """change the displacement scale"""
         if scale == 0:
-            scale = floor(log10(abs(self.Structure.u)))
+            scale = floor(log10(abs(self.Structure.u[-1])))
             scale = abs(scale)
-            scale = 10 ** (scale.max() - 1.3)
+            scale = 10 ** (scale.max() - 1.6)
             self.__displacementScale = scale
         else:
             self.__displacementScale = scale
 
     def set_force_scale(self, scale = 0):
+        """change the force scale"""
         forces = []
         for i in self.Structure.Elements:
             if i.compute_force() == 0:
